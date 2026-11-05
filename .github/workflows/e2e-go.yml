@@ -5,6 +5,8 @@ on:
     paths: [e2e/go/**, .github/workflows/e2e-go.yml]
 env:
   AUTOPLANE_GOCACHE_VERBOSE: "1"
+  # The checkout belongs to another user in container jobs.
+  GOFLAGS: -buildvcs=false
 defaults:
   run:
     shell: bash
