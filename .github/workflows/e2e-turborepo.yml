@@ -5,6 +5,7 @@ on:
     paths: [e2e/turbo/**, .github/workflows/e2e-turborepo.yml]
 defaults:
   run:
+    shell: bash
     working-directory: e2e/turbo
 jobs:
   pod:

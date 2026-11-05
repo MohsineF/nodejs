@@ -7,6 +7,7 @@ env:
   AUTOPLANE_GOCACHE_VERBOSE: "1"
 defaults:
   run:
+    shell: bash
     working-directory: e2e/go
 jobs:
   pod:
