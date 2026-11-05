@@ -1,0 +1,51 @@
+name: e2e go helper local disk
+on:
+  push:
+    branches: [cache-e2e]
+    paths: [.github/workflows/e2e-go-local.yml]
+env:
+  GOFLAGS: -buildvcs=false
+defaults:
+  run:
+    shell: bash
+    working-directory: e2e/go
+jobs:
+  helper-home:
+    runs-on: go-e2e
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with: { go-version: "1.25", cache: false }
+      - run: df -h ~ "$RUNNER_TEMP" | cat; echo "GOCACHEPROG=${GOCACHEPROG:-unset}"
+      - run: time go build ./...
+  helper-temp:
+    needs: helper-home
+    runs-on: go-e2e
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with: { go-version: "1.25", cache: false }
+      - run: echo "AUTOPLANE_GOCACHE_DIR=$RUNNER_TEMP/gocacheprog" >> "$GITHUB_ENV"
+      - run: time go build ./...
+  off-home:
+    needs: helper-temp
+    runs-on: go-e2e
+    env:
+      GOCACHEPROG: ""
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with: { go-version: "1.25", cache: false }
+      - run: echo "GOCACHE=$(go env GOCACHE)"
+      - run: time go build ./...
+  off-temp:
+    needs: off-home
+    runs-on: go-e2e
+    env:
+      GOCACHEPROG: ""
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with: { go-version: "1.25", cache: false }
+      - run: echo "GOCACHE=$RUNNER_TEMP/go-build" >> "$GITHUB_ENV"
+      - run: time go build ./...
