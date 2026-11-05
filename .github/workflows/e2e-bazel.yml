@@ -1,0 +1,27 @@
+name: e2e bazel cache
+on:
+  push:
+    branches: [cache-e2e]
+    paths: [e2e/bazel/**, .github/workflows/e2e-bazel.yml]
+defaults:
+  run:
+    working-directory: e2e/bazel
+jobs:
+  pod:
+    runs-on: bazel-e2e
+    steps:
+      - uses: actions/checkout@v5
+      - run: cat /etc/bazel.bazelrc || echo "no system rc"
+      - run: sudo curl -fsSL -o /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64 && sudo chmod +x /usr/local/bin/bazel
+      - run: time bazel build //:all 2>&1 | tee bazel.log; grep -E "processes:|remote cache hit|WARNING.*remote" bazel.log | head -5
+  container:
+    needs: pod
+    runs-on: bazel-e2e
+    container: ubuntu:24.04
+    steps:
+      - run: apt-get update -qq && apt-get install -y -qq curl ca-certificates git >/dev/null
+        working-directory: /
+      - uses: actions/checkout@v5
+      - run: cat /etc/bazel.bazelrc || echo "no system rc"
+      - run: curl -fsSL -o /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64 && chmod +x /usr/local/bin/bazel
+      - run: time bazel build //:all 2>&1 | tee bazel.log; grep -E "processes:|remote cache hit|WARNING.*remote" bazel.log | head -5

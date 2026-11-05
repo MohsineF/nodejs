@@ -1,0 +1,39 @@
+name: e2e turborepo cache
+on:
+  push:
+    branches: [cache-e2e]
+    paths: [e2e/turbo/**, .github/workflows/e2e-turborepo.yml]
+defaults:
+  run:
+    working-directory: e2e/turbo
+jobs:
+  pod:
+    runs-on: turborepo-e2e
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: 22 }
+      - run: echo "TURBO_API=${TURBO_API:-unset} TURBO_TEAM=${TURBO_TEAM:-unset} TURBO_TOKEN=${TURBO_TOKEN:+set}"
+      - run: npm ci
+      - run: npx turbo run build 2>&1 | tee turbo.log; echo "RESULT hits=$(grep -c 'cache hit' turbo.log) misses=$(grep -c 'cache miss' turbo.log)"
+  container:
+    needs: pod
+    runs-on: turborepo-e2e
+    container: node:22-slim
+    steps:
+      - uses: actions/checkout@v5
+      - run: echo "TURBO_API=${TURBO_API:-unset} TURBO_TEAM=${TURBO_TEAM:-unset} TURBO_TOKEN=${TURBO_TOKEN:+set}"
+      - run: npm ci
+      - run: npx turbo run build 2>&1 | tee turbo.log; echo "RESULT hits=$(grep -c 'cache hit' turbo.log) misses=$(grep -c 'cache miss' turbo.log)"
+  own-remote-cache:
+    needs: pod
+    runs-on: turborepo-e2e
+    env:
+      TURBO_API: http://127.0.0.1:9
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: 22 }
+      - run: echo "TURBO_API=${TURBO_API:-unset} TURBO_TOKEN=${TURBO_TOKEN:+set}"
+      - run: npm ci
+      - run: npx turbo run build 2>&1 | tee turbo.log; echo "RESULT hits=$(grep -c 'cache hit' turbo.log) misses=$(grep -c 'cache miss' turbo.log)"

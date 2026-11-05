@@ -1,0 +1,12 @@
+# Slow genrules, so a cache hit is obvious.
+genrule(name = "g0", outs = ["g0.txt"], cmd = "sleep 2; echo 0 > $@")
+genrule(name = "g1", outs = ["g1.txt"], cmd = "sleep 2; echo 1 > $@")
+genrule(name = "g2", outs = ["g2.txt"], cmd = "sleep 2; echo 2 > $@")
+genrule(name = "g3", outs = ["g3.txt"], cmd = "sleep 2; echo 3 > $@")
+genrule(name = "g4", outs = ["g4.txt"], cmd = "sleep 2; echo 4 > $@")
+genrule(name = "g5", outs = ["g5.txt"], cmd = "sleep 2; echo 5 > $@")
+genrule(name = "g6", outs = ["g6.txt"], cmd = "sleep 2; echo 6 > $@")
+genrule(name = "g7", outs = ["g7.txt"], cmd = "sleep 2; echo 7 > $@")
+genrule(name = "g8", outs = ["g8.txt"], cmd = "sleep 2; echo 8 > $@")
+genrule(name = "g9", outs = ["g9.txt"], cmd = "sleep 2; echo 9 > $@")
+filegroup(name = "all", srcs = [":g0", ":g1", ":g2", ":g3", ":g4", ":g5", ":g6", ":g7", ":g8", ":g9"])
